@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BFHL Node Processor</title>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --error: #ef4444;
+            --error-bg: #7f1d1d;
+            --warning: #f59e0b;
+            --warning-bg: #78350f;
+            --success: #10b981;
+            --success-bg: #064e3b;
+            --radius: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--accent);
+            margin-bottom: 2rem;
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .card {
+            background-color: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid var(--border);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        input[type="text"], textarea {
+            width: 100%;
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: var(--bg-dark);
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--radius);
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #0ea5e9;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .stat-box {
+            background-color: var(--bg-dark);
+            padding: 1rem;
+            border-radius: var(--radius);
+            border: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+
+        .badge-red {
+            background-color: var(--error-bg);
+            color: #fca5a5;
+            border: 1px solid var(--error);
+        }
+
+        .badge-orange {
+            background-color: var(--warning-bg);
+            color: #fcd34d;
+            border: 1px solid var(--warning);
+        }
+        
+        .badge-green {
+            background-color: var(--success-bg);
+            color: #6ee7b7;
+            border: 1px solid var(--success);
+        }
+
+        .hierarchy-item {
+            background-color: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .hierarchy-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .hierarchy-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        pre {
+            background-color: #020617;
+            padding: 1rem;
+            border-radius: var(--radius);
+            overflow-x: auto;
+            color: #e2e8f0;
+            font-size: 0.875rem;
+            border: 1px solid var(--border);
+        }
+
+        #results {
+            display: none;
+            margin-top: 2rem;
+        }
+
+        .error-card {
+            background-color: var(--error-bg);
+            border: 1px solid var(--error);
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: var(--radius);
+            margin-bottom: 1.5rem;
+            display: none;
+        }
+        
+        .empty-text {
+            color: var(--text-muted);
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>BFHL Node Processor</h1>
+        
+        <div class="card">
+            <div class="form-group">
+                <label for="apiUrl">API Base URL</label>
+                <input type="text" id="apiUrl" value="http://localhost:3000">
+            </div>
+            
+            <div class="form-group">
+                <label for="dataInput">Node Entries (comma or newline separated)</label>
+                <textarea id="dataInput" placeholder='e.g. A->B, A->C, X->Y'></textarea>
+            </div>
+            
+            <button id="submitBtn">Submit</button>
+        </div>
+
+        <div id="errorCard" class="error-card"></div>
+
+        <div id="results">
+            <div class="card">
+                <h2>Identity</h2>
+                <div class="grid-3">
+                    <div class="stat-box">
+                        <div class="stat-value" id="resUserId"></div>
+                        <div class="stat-label">User ID</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="resEmail"></div>
+                        <div class="stat-label">Email</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="resRoll"></div>
+                        <div class="stat-label">Roll Number</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Summary</h2>
+                <div class="grid-3">
+                    <div class="stat-box">
+                        <div class="stat-value" id="resTrees"></div>
+                        <div class="stat-label">Total Trees</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="resCycles"></div>
+                        <div class="stat-label">Total Cycles</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="resLargest"></div>
+                        <div class="stat-label">Largest Tree Root</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Hierarchies</h2>
+                <div id="hierarchiesContainer"></div>
+            </div>
+
+            <div class="card">
+                <h2>Invalid Entries</h2>
+                <div id="invalidContainer"></div>
+            </div>
+
+            <div class="card">
+                <h2>Duplicate Edges</h2>
+                <div id="duplicatesContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('submitBtn').addEventListener('click', async () => {
+            const apiUrl = document.getElementById('apiUrl').value.trim();
+            const dataInput = document.getElementById('dataInput').value;
+            
+            let data = [];
+            try {
+                // Try to parse as JSON in case user pastes the whole PDF payload
+                const parsed = JSON.parse(dataInput);
+                if (parsed.data && Array.isArray(parsed.data)) {
+                    data = parsed.data;
+                } else if (Array.isArray(parsed)) {
+                    data = parsed;
+                } else {
+                    throw new Error("JSON parsed but no data array found");
+                }
+            } catch (e) {
+                // Fallback to comma/newline separated
+                // Remove quotes in case they pasted an array content like "A->B", "X->Y"
+                const cleanInput = dataInput.replace(/"/g, '');
+                const rawData = cleanInput.split(/[\n,]+/);
+                data = rawData.map(s => s.trim()).filter(s => s.length > 0);
+            }
+            
+            const errorCard = document.getElementById('errorCard');
+            const resultsDiv = document.getElementById('results');
+            const btn = document.getElementById('submitBtn');
+            
+            errorCard.style.display = 'none';
+            resultsDiv.style.display = 'none';
+            
+            if (data.length === 0) {
+                errorCard.textContent = "Please enter some data.";
+                errorCard.style.display = 'block';
+                return;
+            }
+
+            btn.textContent = "Processing...";
+            btn.disabled = true;
+            
+            try {
+                // Ensure no trailing slash
+                const urlBase = apiUrl.endsWith('/') ? apiUrl.slice(0, -1) : apiUrl;
+                const response = await fetch(`${urlBase}/bfhl`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ data })
+                });
+                
+                const result = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(result.error || `HTTP error! status: ${response.status}`);
+                }
+                
+                renderResults(result);
+                resultsDiv.style.display = 'block';
+            } catch (err) {
+                errorCard.textContent = `Error: ${err.message}`;
+                errorCard.style.display = 'block';
+            } finally {
+                btn.textContent = "Submit";
+                btn.disabled = false;
+            }
+        });
+
+        function renderResults(res) {
+            // Identity
+            document.getElementById('resUserId').textContent = res.user_id;
+            document.getElementById('resEmail').textContent = res.email_id;
+            document.getElementById('resRoll').textContent = res.college_roll_number;
+            
+            // Summary
+            document.getElementById('resTrees').textContent = res.summary.total_trees;
+            document.getElementById('resCycles').textContent = res.summary.total_cycles;
+            document.getElementById('resLargest').textContent = res.summary.largest_tree_root || "None";
+            
+            // Hierarchies
+            const hierarchiesContainer = document.getElementById('hierarchiesContainer');
+            hierarchiesContainer.innerHTML = '';
+            
+            if (!res.hierarchies || res.hierarchies.length === 0) {
+                hierarchiesContainer.innerHTML = '<p class="empty-text">No hierarchies found.</p>';
+            } else {
+                res.hierarchies.forEach(h => {
+                    const item = document.createElement('div');
+                    item.className = 'hierarchy-item';
+                    
+                    let badge = '';
+                    if (h.has_cycle) {
+                        badge = '<span class="badge badge-red">Cycle Detected</span>';
+                    } else {
+                        badge = `<span class="badge badge-green">Depth: ${h.depth}</span>`;
+                    }
+                    
+                    item.innerHTML = `
+                        <div class="hierarchy-header">
+                            <span class="hierarchy-title">Root: ${h.root}</span>
+                            ${badge}
+                        </div>
+                        <pre>${JSON.stringify(h.tree, null, 2)}</pre>
+                    `;
+                    hierarchiesContainer.appendChild(item);
+                });
+            }
+            
+            // Invalid Entries
+            const invalidContainer = document.getElementById('invalidContainer');
+            invalidContainer.innerHTML = '';
+            if (!res.invalid_entries || res.invalid_entries.length === 0) {
+                invalidContainer.innerHTML = '<span class="empty-text">None</span>';
+            } else {
+                res.invalid_entries.forEach(entry => {
+                    const span = document.createElement('span');
+                    span.className = 'badge badge-red';
+                    span.textContent = entry;
+                    invalidContainer.appendChild(span);
+                });
+            }
+            
+            // Duplicate Edges
+            const duplicatesContainer = document.getElementById('duplicatesContainer');
+            duplicatesContainer.innerHTML = '';
+            if (!res.duplicate_edges || res.duplicate_edges.length === 0) {
+                duplicatesContainer.innerHTML = '<span class="empty-text">None</span>';
+            } else {
+                res.duplicate_edges.forEach(edge => {
+                    const span = document.createElement('span');
+                    span.className = 'badge badge-orange';
+                    span.textContent = edge;
+                    duplicatesContainer.appendChild(span);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
