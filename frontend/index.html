@@ -295,6 +295,11 @@
                 <h2>Duplicate Edges</h2>
                 <div id="duplicatesContainer"></div>
             </div>
+
+            <div class="card">
+                <h2>Raw JSON Response</h2>
+                <pre id="rawJsonResponse" style="white-space: pre-wrap; word-wrap: break-word;"></pre>
+            </div>
         </div>
     </div>
 
@@ -433,6 +438,9 @@
                     duplicatesContainer.appendChild(span);
                 });
             }
+
+            // Raw JSON
+            document.getElementById('rawJsonResponse').textContent = JSON.stringify(res, null, 2);
         }
     </script>
 </body>
